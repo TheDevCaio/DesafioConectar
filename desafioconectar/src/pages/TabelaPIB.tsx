@@ -22,7 +22,7 @@ export default function TabelaPIB() {
   
   useEffect(() => {
     async function carregarDados() {
-      const resultado = await buscarDadosPIB();
+        const resultado = await buscarDadosPIB() as any;
       const dadosFormatados: DadosPIB[] = Object.entries(
         resultado[0].resultados[0].series['all'].serie as Record<string, string>
       ).map(([ano, valor]) => ({
