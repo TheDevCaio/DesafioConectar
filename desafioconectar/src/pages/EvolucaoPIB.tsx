@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { buscarDadosPIB } from '../services/ibgeService';
+import React from 'react';
+import { buscarDadosPIB } from '../services/ibgeservice';
 
 const EvolucaoPIB = () => {
   const [dadosPIB, setDadosPIB] = useState<any>(null);
@@ -20,7 +21,7 @@ const EvolucaoPIB = () => {
   return (
     <div>
       <h1>Evolução do PIB</h1>
-      {/* Aqui depois vamos colocar o gráfico usando o Recharts */}
+
       {dadosPIB ? <pre>{JSON.stringify(dadosPIB, null, 2)}</pre> : <p>Carregando...</p>}
     </div>
   );
