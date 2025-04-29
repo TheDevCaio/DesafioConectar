@@ -1,8 +1,9 @@
 'use client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import EvolucaoPIB from './EvolucaoPIB';
-import TabelaPIB from './TabelaPIB';
+
 import React from 'react';
+import EvolucaoPIB from './pages/EvolucaoPIB';
+import TabelaPIB from './pages/TabelaPIB';
 
 export default function App() {
   return (
