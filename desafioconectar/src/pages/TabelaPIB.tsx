@@ -43,8 +43,28 @@ export default function TabelaPIB() {
 
     carregarDados();
   }, []);
-
+ 
   return (
-  <></>
+    <div style={{ padding: '20px' }}>
+      <h1>Tabela de PIB por Ano</h1>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th>Ano</th>
+            <th>PIB Total (USD)</th>
+            <th>PIB per Capita (USD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {dados.map((item) => (
+            <tr key={item.ano}>
+              <td>{item.ano}</td>
+              <td>{formatarMoeda(item.pibTotal)}</td>
+              <td>{formatarMoeda(item.pibPerCapita)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
