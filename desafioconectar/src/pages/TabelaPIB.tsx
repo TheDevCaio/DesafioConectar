@@ -10,6 +10,13 @@ type DadosPIB = {
 export default function TabelaPIB() {
   const [dados, setDados] = useState<DadosPIB[]>([]);
 
+  function formatarMoeda(valor: number) {
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'USD',
+    });
+  }
+  
   useEffect(() => {
     async function carregarDados() {
       try {
