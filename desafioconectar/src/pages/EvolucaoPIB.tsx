@@ -1,30 +1,50 @@
-import { useEffect, useState } from 'react';
-import React from 'react';
+'use client';
+import React, { useEffect, useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { buscarDadosPIB } from '../services/ibgeservice';
 
-const EvolucaoPIB = () => {
-  const [dadosPIB, setDadosPIB] = useState<any>(null);
+type DadosPIB = {
+  ano: string;
+  pibTotal: number;
+  pibPerCapita: number;
+};
+
+export default function EvolucaoPIB() {
+  const [dados, setDados] = useState<DadosPIB[]>([]);
 
   useEffect(() => {
-    const carregarDados = async () => {
-      try {
-        const dados = await buscarDadosPIB();
-        setDadosPIB(dados);
-      } catch (error) {
-        console.error('Erro ao carregar dados do PIB:', error);
-      }
-    };
+    async function carregarDados() {
+      const resultado = await buscarDadosPIB() as any;
+
+      const dadosFormatados: DadosPIB[] = Object.entries(
+        resultado[0].resultados[0].series['all'].serie as Record<string, string>
+      ).map(([ano, valor]) => ({
+        ano,
+        pibTotal: parseFloat(valor),
+        pibPerCapita: parseFloat(
+          (resultado[0].resultados[1].series['all'].serie as Record<string, string>)[ano] ?? '0'
+        ),
+      }));
+
+      setDados(dadosFormatados);
+    }
 
     carregarDados();
   }, []);
 
   return (
-    <div>
-      <h1>Evolução do PIB</h1>
-
-      {dadosPIB ? <pre>{JSON.stringify(dadosPIB, null, 2)}</pre> : <p>Carregando...</p>}
+    <div style={{ width: '100%', height: 500 }}>
+      <h1>Evolução do PIB Brasileiro</h1>
+      <ResponsiveContainer>
+        <LineChart data={dados}>
+          <XAxis dataKey="ano" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="pibTotal" name="PIB Total (USD)" stroke="#8884d8" />
+          <Line type="monotone" dataKey="pibPerCapita" name="PIB per Capita (USD)" stroke="#82ca9d" />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
-};
-
-export default EvolucaoPIB;
+}
