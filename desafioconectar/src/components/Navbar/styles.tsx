@@ -19,7 +19,7 @@ export const NavbarStyle = styled.nav`
 `;
 
 export const Title = styled.h1`
-  font-size: 1.9rem;
+  font-size: 2rem;
   font-weight: bold;
   margin: 0;
 
@@ -62,7 +62,7 @@ export const Button = styled.button`
   background-color: #fff;
   color: #4CAF50;
   border: none;
-  padding: 8px 16px;
+  padding: 11px 20px;
   font-size: 1rem;
   font-weight: 600;
   border-radius: 5px;

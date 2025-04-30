@@ -8,13 +8,15 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { GraphWrapper, ChartContainer, CustomLegend, Title } from './styles';
+import { GraphWrapper, ChartContainer, CustomLegend, Title, CheckboxGroup, CheckboxLabel } from './styles';
 import { buscarTaxaCambio } from '../../services/taxaCambio';
 import buscarPopulacaoBrasil from '../../services/buscarPopulacaoBrasil';
 import { DadosPIB, buscarDadosPIB } from '../../services/ibgeservice';
 
 const Grafico: React.FC = () => {
   const [dados, setDados] = useState<DadosPIB[]>([]);
+  const [mostrarPIBTotal, setMostrarPIBTotal] = useState(false);
+  const [mostrarPIBPerCapita, setMostrarPIBPerCapita] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,8 +30,8 @@ const Grafico: React.FC = () => {
 
       const dadosEmDolar = dadosPIB
         .map((dado) => {
-            const pibEmDolar = dado.pibTotal / taxaCambio;  
-            const pibPerCapitaEmDolar = pibEmDolar / populacao;  
+          const pibEmDolar = dado.pibTotal / taxaCambio;
+          const pibPerCapitaEmDolar = pibEmDolar / populacao;
           return {
             ...dado,
             pibTotal: pibEmDolar,
@@ -44,35 +46,68 @@ const Grafico: React.FC = () => {
     fetchData();
   }, []);
 
-  const CustomYAxisLabel = ({ viewBox }: any) => {
+  const CustomYAxisLabelLeft = ({ viewBox }: any) => {
     const { x, y, height } = viewBox;
-    const isMobile = window.innerWidth <= 768;
-
-
     return (
       <text
-        x={isMobile ? x - 50 : x - 190} 
-        y={isMobile ? y + height / 2 + 10: y + height / 2 + 20} 
+        x={x - 40}
+        y={y + height / 2}
         textAnchor="middle"
         dominantBaseline="middle"
-        transform={isMobile ? `rotate(-90, ${x + 20}, ${y + height / 2 + 40})` : `rotate(-90, ${x - 40}, ${y + height / 2})`}
+        transform={`rotate(-90, ${x - 40}, ${y + height / 2})`}
         fill="#000"
       >
-        Dólar
+        PIB Total (US$)
+      </text>
+    );
+  };
+
+  const CustomYAxisLabelRight = ({ viewBox }: any) => {
+    const { x, y, height } = viewBox;
+    return (
+      <text
+        x={x + 40}
+        y={y + height / 2 - 26}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        transform={`rotate(90, ${x + 40}, ${y + height / 2 + 7})`}
+        fill="#000"
+      >
+        PIB per Capita (US$)
       </text>
     );
   };
 
   return (
     <GraphWrapper>
-      <Title>Evolução do PIB e do PIB per capta brasileiro</Title>
+      <Title>Evolução do PIB e do PIB per capita brasileiro</Title>
+
+      <CheckboxGroup>
+        <CheckboxLabel color="#8884d8">
+          <input
+            type="checkbox"
+            checked={mostrarPIBTotal}
+            onChange={() => setMostrarPIBTotal(!mostrarPIBTotal)}
+          />
+          <span>PIB Total</span>
+        </CheckboxLabel>
+        <CheckboxLabel color="#ff7300">
+          <input
+            type="checkbox"
+            checked={mostrarPIBPerCapita}
+            onChange={() => setMostrarPIBPerCapita(!mostrarPIBPerCapita)}
+          />
+          <span>PIB per Capita</span>
+        </CheckboxLabel>
+      </CheckboxGroup>
+
       <ChartContainer>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={dados}
-            margin={{ top: 20, right: 20, left: 40, bottom: 20 }}
+            margin={{ top: 20, right: 60, left: 89, bottom: 20 }}
           >
-            <CartesianGrid />
+            <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="ano"
               label={{
@@ -82,45 +117,65 @@ const Grafico: React.FC = () => {
               }}
             />
             <YAxis
-              label={<CustomYAxisLabel />}
+              yAxisId="left"
+              label={<CustomYAxisLabelLeft />}
               tickFormatter={(value) =>
                 `US$ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
               }
             />
-            <Tooltip
-              formatter={(value: number) =>
-                `US$ ${value.toFixed(4).replace(',', '.')}`
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              label={<CustomYAxisLabelRight />}
+              tickFormatter={(value) =>
+                `US$ ${value.toLocaleString(undefined, { maximumFractionDigits: 4})}`
               }
             />
-            <Line
-              type="monotone"
-              dataKey="pibTotal"
-              name="PIB Total"
-              stroke="#8884d8"
-              strokeWidth={2}
-              dot={false}
+            <Tooltip
+              formatter={(value: number, name: string) =>
+                [`US$ ${value.toFixed(3)}`, name]
+              }
+              labelFormatter={(label: number) => `Ano: ${label}`}
             />
-            <Line
-              type="monotone"
-              dataKey="pibPerCapita"
-              name="PIB per Capita"
-              stroke="#82ca9d"
-              strokeWidth={2}
-              dot={false}
-            />
+            {mostrarPIBTotal && (
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="pibTotal"
+                name="PIB Total"
+                stroke="#8884d8"
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {mostrarPIBPerCapita && (
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="pibPerCapita"
+                name="PIB per Capita"
+                stroke="#ff7300"
+                strokeWidth={3}
+                dot
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </ChartContainer>
 
       <CustomLegend>
-        <div>
-          <span className="dot" style={{ backgroundColor: '#8884d8' }}></span>
-          PIB Total
-        </div>
-        <div>
-          <span className="dot" style={{ backgroundColor: '#82ca9d' }}></span>
-          PIB per Capita
-        </div>
+        {mostrarPIBTotal && (
+          <div>
+            <span className="dot" style={{ backgroundColor: '#8884d8' }}></span>
+            PIB Total
+          </div>
+        )}
+        {mostrarPIBPerCapita && (
+          <div>
+            <span className="dot" style={{ backgroundColor: '#ff7300' }}></span>
+            PIB per Capita
+          </div>
+        )}
       </CustomLegend>
     </GraphWrapper>
   );

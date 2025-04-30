@@ -9,7 +9,7 @@ export const GraphWrapper = styled.div`
   border-radius: 12px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   padding: 25px;
-  width: 95%;
+  width: 100vw;
   max-width: 1400px;
   margin: 5vh auto 0 auto;
 
@@ -106,4 +106,33 @@ export const CustomLegend = styled.div`
 
 export const Title = styled.h1`
   font-size: 6px;
+`;
+
+export const CheckboxGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+`;
+
+export const CheckboxLabel = styled.label<{ color: string }>`
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: ${({ color }) => color || '#444'};
+  font-size: 0.95rem;
+  gap: 0.5rem;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    accent-color: ${({ color }) => color || '#444'};
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  span {
+    user-select: none;
+  }
 `;
