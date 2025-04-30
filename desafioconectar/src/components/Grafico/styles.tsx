@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 
-
 export const GraphWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -10,23 +9,29 @@ export const GraphWrapper = styled.div`
   border-radius: 12px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   padding: 25px;
-  margin: 30px;
-  width: 100%;
-  margin-top: 10vh;
-  margin-left: 3.6vw;
+  width: 95%;
   max-width: 1400px;
+  margin: 5vh auto 0 auto;
 
+
+  @media(max-width: 746px){
+  margin-top: 10vh;
+  }
   h1 {
     font-size: 2.2rem;
     font-weight: 700;
     color: #388E3C;
     margin-bottom: 25px;
     text-align: center;
+
+    @media (max-width: 768px) {
+      font-size: 1.6rem;
+    }
   }
 
-  @media (max-width: 768px) {
-    max-width: 100%;
-    padding: 20px;
+  @media(max-width: 768px) {
+    padding: 15px;
+    width: 90%;
   }
 `;
 
@@ -37,9 +42,8 @@ export const ChartContainer = styled.div`
   overflow: hidden;
   background-color: #fff;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-
-  font-family: 'Inter', sans-serif; /* ou a fonte padrão do seu projeto */
-  font-size: 0.9rem; /* ajuste conforme necessário */
+  font-family: 'Inter', sans-serif; 
+  font-size: 0.9rem;
   color: #212121;
 
   .recharts-cartesian-grid line {
@@ -53,26 +57,27 @@ export const ChartContainer = styled.div`
     border-radius: 5px;
     padding: 5px;
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .recharts-yAxis text,
   .recharts-xAxis text,
   .recharts-label {
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     fill: #212121;
   }
 
   @media (max-width: 768px) {
-    height: 350px;
+    height: 320px;
   }
 `;
 
 export const CustomLegend = styled.div`
   display: flex;
   justify-content: center;
-  gap: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
   margin-top: 15px;
 
   div {
@@ -80,7 +85,7 @@ export const CustomLegend = styled.div`
     align-items: center;
     font-weight: 600;
     color: #388E3C;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
 
   .dot {
@@ -89,4 +94,16 @@ export const CustomLegend = styled.div`
     border-radius: 50%;
     margin-right: 8px;
   }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+
+    div {
+      font-size: 0.8rem;
+    }
+  }
+`;
+
+export const Title = styled.h1`
+  font-size: 6px;
 `;

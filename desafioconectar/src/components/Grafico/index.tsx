@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { GraphWrapper, ChartContainer, CustomLegend } from './styles';
+import { GraphWrapper, ChartContainer, CustomLegend, Title } from './styles';
 import { buscarTaxaCambio } from '../../services/taxaCambio';
 import buscarPopulacaoBrasil from '../../services/buscarPopulacaoBrasil';
 import { DadosPIB, buscarDadosPIB } from '../../services/ibgeservice';
@@ -20,9 +20,7 @@ const Grafico: React.FC = () => {
     const fetchData = async () => {
       const dadosPIB = await buscarDadosPIB();
       const taxaCambio = await buscarTaxaCambio();
-      console.log(buscarTaxaCambio);
       const populacao = await buscarPopulacaoBrasil();
-      console.log(populacao);
       if (populacao === 0) {
         console.error('População inválida. Não foi possível calcular o PIB per capita.');
         return;
@@ -31,12 +29,7 @@ const Grafico: React.FC = () => {
       const dadosEmDolar = dadosPIB
         .map((dado) => {
             const pibEmDolar = dado.pibTotal / taxaCambio;  
-            console.log(dado.pibTotal);
-            
             const pibPerCapitaEmDolar = pibEmDolar / populacao;  
-            console.log(populacao);
-            console.log(pibEmDolar);
-            console.log(pibPerCapitaEmDolar);
           return {
             ...dado,
             pibTotal: pibEmDolar,
@@ -53,13 +46,16 @@ const Grafico: React.FC = () => {
 
   const CustomYAxisLabel = ({ viewBox }: any) => {
     const { x, y, height } = viewBox;
+    const isMobile = window.innerWidth <= 768;
+
+
     return (
       <text
-        x={x + 15} 
-        y={y + height / 2 + 80} 
+        x={isMobile ? x - 50 : x - 190} 
+        y={isMobile ? y + height / 2 + 10: y + height / 2 + 20} 
         textAnchor="middle"
         dominantBaseline="middle"
-        transform={`rotate(-90, ${x - 40}, ${y + height / 2})`}
+        transform={isMobile ? `rotate(-90, ${x + 20}, ${y + height / 2 + 40})` : `rotate(-90, ${x - 40}, ${y + height / 2})`}
         fill="#000"
       >
         Dólar
@@ -69,7 +65,7 @@ const Grafico: React.FC = () => {
 
   return (
     <GraphWrapper>
-      <h1>Evolução do PIB e do PIB per Capita (Em Dólares)</h1>
+      <Title>Evolução do PIB e do PIB per capta brasileiro</Title>
       <ChartContainer>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
@@ -91,10 +87,10 @@ const Grafico: React.FC = () => {
                 `US$ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
               }
             />
-             <Tooltip
-            formatter={(value: number) =>
+            <Tooltip
+              formatter={(value: number) =>
                 `US$ ${value.toFixed(4).replace(',', '.')}`
-            }
+              }
             />
             <Line
               type="monotone"
