@@ -6,11 +6,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { GraphWrapper, ChartContainer } from './styled';
-
+import { GraphWrapper, ChartContainer, CustomLegend } from './styles';
 import { buscarTaxaCambio } from '../../services/taxaCambio';
 import buscarPopulacaoBrasil from '../../services/buscarPopulacaoBrasil';
 import { DadosPIB, buscarDadosPIB } from '../../services/ibgeservice';
@@ -22,25 +20,30 @@ const Grafico: React.FC = () => {
     const fetchData = async () => {
       const dadosPIB = await buscarDadosPIB();
       const taxaCambio = await buscarTaxaCambio();
+      console.log(buscarTaxaCambio);
       const populacao = await buscarPopulacaoBrasil();
-
+      console.log(populacao);
       if (populacao === 0) {
         console.error('População inválida. Não foi possível calcular o PIB per capita.');
-        return; 
+        return;
       }
 
-      const dadosEmDolar = dadosPIB.map(dado => {
-        const pibEmDolar = dado.pibTotal / taxaCambio;
-
-
-        const pibPerCapitaEmDolar = pibEmDolar / populacao;
-
-        return {
-          ...dado,
-          pibTotal: pibEmDolar, 
-          pibPerCapita: pibPerCapitaEmDolar, 
-        };
-      });
+      const dadosEmDolar = dadosPIB
+        .map((dado) => {
+            const pibEmDolar = dado.pibTotal / taxaCambio;  
+            console.log(dado.pibTotal);
+            
+            const pibPerCapitaEmDolar = pibEmDolar / populacao;  
+            console.log(populacao);
+            console.log(pibEmDolar);
+            console.log(pibPerCapitaEmDolar);
+          return {
+            ...dado,
+            pibTotal: pibEmDolar,
+            pibPerCapita: pibPerCapitaEmDolar,
+          } as DadosPIB;
+        })
+        .filter((dado): dado is DadosPIB => dado !== null);
 
       setDados(dadosEmDolar);
     };
@@ -48,21 +51,55 @@ const Grafico: React.FC = () => {
     fetchData();
   }, []);
 
+  const CustomYAxisLabel = ({ viewBox }: any) => {
+    const { x, y, height } = viewBox;
+    return (
+      <text
+        x={x + 15} 
+        y={y + height / 2 + 80} 
+        textAnchor="middle"
+        dominantBaseline="middle"
+        transform={`rotate(-90, ${x - 40}, ${y + height / 2})`}
+        fill="#000"
+      >
+        Dólar
+      </text>
+    );
+  };
+
   return (
     <GraphWrapper>
-      <h1>Evolução do PIB (em Dólar) e PIB per Capita (em Dólar)</h1>
+      <h1>Evolução do PIB e do PIB per Capita (Em Dólares)</h1>
       <ChartContainer>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={dados} margin={{ top: 20, right: 20, left: 40, bottom: 20 }}>
+          <LineChart
+            data={dados}
+            margin={{ top: 20, right: 20, left: 40, bottom: 20 }}
+          >
             <CartesianGrid />
-            <XAxis dataKey="ano" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
+            <XAxis
+              dataKey="ano"
+              label={{
+                value: 'Ano',
+                position: 'insideBottom',
+                offset: -5,
+              }}
+            />
+            <YAxis
+              label={<CustomYAxisLabel />}
+              tickFormatter={(value) =>
+                `US$ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+              }
+            />
+             <Tooltip
+            formatter={(value: number) =>
+                `US$ ${value.toFixed(4).replace(',', '.')}`
+            }
+            />
             <Line
               type="monotone"
               dataKey="pibTotal"
-              name="PIB Total (Mil Dólares)"
+              name="PIB Total"
               stroke="#8884d8"
               strokeWidth={2}
               dot={false}
@@ -70,7 +107,7 @@ const Grafico: React.FC = () => {
             <Line
               type="monotone"
               dataKey="pibPerCapita"
-              name="PIB per Capita (Dólares)"
+              name="PIB per Capita"
               stroke="#82ca9d"
               strokeWidth={2}
               dot={false}
@@ -78,6 +115,17 @@ const Grafico: React.FC = () => {
           </LineChart>
         </ResponsiveContainer>
       </ChartContainer>
+
+      <CustomLegend>
+        <div>
+          <span className="dot" style={{ backgroundColor: '#8884d8' }}></span>
+          PIB Total
+        </div>
+        <div>
+          <span className="dot" style={{ backgroundColor: '#82ca9d' }}></span>
+          PIB per Capita
+        </div>
+      </CustomLegend>
     </GraphWrapper>
   );
 };
