@@ -1,7 +1,7 @@
 import React from "react";
 import { FooterStyle, FooterContent, FooterLinks, FooterButton, SocialIcons } from "./style";
-import { Link } from "react-router-dom"; // Caso queira usar React Router para navegação
-import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa"; // Exemplos de ícones de redes sociais
+import { Link } from "react-router-dom"; 
+import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa"; 
 
 export function Footer() {
   return (
