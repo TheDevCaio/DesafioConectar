@@ -1,43 +1,33 @@
-import axios from "axios";
+import axios from 'axios';
 
-const api = axios.create({
-  baseURL: "https://servicodados.ibge.gov.br/api/v3/agregados",
-});
-
-export type DadosPIBAno = {
-  ano: string;
+export interface DadosPIB {
+  ano: number;
   pibTotal: number;
   pibPerCapita: number;
-};
+}
 
-export async function buscarDadosPIB(): Promise<DadosPIBAno[]> {
-  const anos = [
-    "2010","2011","2012","2013","2014","2015",
-    "2016","2017","2018","2019","2020","2021",
-  ];
-
+export const buscarDadosPIB = async (): Promise<DadosPIB[]> => {
   try {
-    const dadosPorAno = await Promise.all(
-      anos.map(async (ano) => {
-        const [resTotal, resPerCapita] = await Promise.all([
-          api.get(`/5938/periodos/${ano}/variaveis/37?localidades=N1[all]`),
-          api.get(`/5938/periodos/${ano}/variaveis/5939?localidades=N1[all]`),
-        ]);
+    const agregado = 1712;
+    const variaveis = '214|1982';
+    const localidades = 'BR';
 
-        const totalRaw = resTotal.data[0].resultados[0].series["all"].serie[ano];
-        const perCapitaRaw = resPerCapita.data[0].resultados[0].series["all"].serie[ano];
-
-        return {
-          ano,
-          pibTotal: parseFloat(totalRaw ?? "0"),
-          pibPerCapita: parseFloat(perCapitaRaw ?? "0"),
-        };
-      })
+    const response = await axios.get(
+      `https://servicodados.ibge.gov.br/api/v3/agregados/${agregado}/variaveis/${variaveis}?localidades=${localidades}`
     );
 
-    return dadosPorAno;
+    const resultados = response.data[0].resultados;
+    const series = resultados.map((item: any) => item.series[0].serie);
+
+    const anos = Object.keys(series[0]);
+
+    return anos.map((ano) => ({
+      ano: Number(ano),
+      pibTotal: Number(series[0][ano]),
+      pibPerCapita: Number(series[1][ano]),
+    }));
   } catch (error) {
-    console.error("Erro ao buscar dados do IBGE:", error);
-    throw error;
+    console.error('Erro ao buscar dados do IBGE:', error);
+    return [];
   }
-}
+};

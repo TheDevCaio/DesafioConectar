@@ -1,51 +1,38 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { buscarDadosPIB } from '../../services/ibgeservice';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { GraphWrapper } from './styled';
+import { buscarDadosPIB } from '../../services/ibgeservice';
 
-type DadosPIB = {
-  ano: string;
-  pibTotal: number;
-  pibPerCapita: number;
-};
-
-export default function Grafico() {
+export interface DadosPIB {
+    ano: number;
+    pibTotal: number;
+    pibPerCapita: number;
+  }
+  
+const Grafico: React.FC = () => {
   const [dados, setDados] = useState<DadosPIB[]>([]);
 
   useEffect(() => {
-    async function carregarDados() {
-      const resultado = await buscarDadosPIB() as any;
-
-      const dadosFormatados: DadosPIB[] = Object.entries(
-        resultado[0].resultados[0].series['all'].serie as Record<string, string>
-      ).map(([ano, valor]) => ({
-        ano,
-        pibTotal: parseFloat(valor),
-        pibPerCapita: parseFloat(
-          (resultado[0].resultados[1].series['all'].serie as Record<string, string>)[ano] ?? '0'
-        ),
-      }));
-
-      setDados(dadosFormatados);
-    }
-
-    carregarDados();
+    buscarDadosPIB().then(setDados);
   }, []);
 
   return (
     <GraphWrapper>
-      <h1>Evolução do PIB Brasileiro</h1>
-      <ResponsiveContainer>
+      <h1>Evolução do PIB</h1>
+      <ResponsiveContainer width="100%" height={400}>
         <LineChart data={dados}>
+          <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="ano" />
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="pibTotal" name="PIB Total (USD)" stroke="#8884d8" />
-          <Line type="monotone" dataKey="pibPerCapita" name="PIB per Capita (USD)" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="pibTotal" name="PIB Total (US$)" stroke="#8884d8" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="pibPerCapita" name="PIB per Capita (US$)" stroke="#82ca9d" strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </GraphWrapper>
   );
-}
+};
+
+export default Grafico;

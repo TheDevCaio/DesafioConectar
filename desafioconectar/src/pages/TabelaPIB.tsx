@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import ReactPaginate from 'react-paginate';
-import { buscarDadosPIB } from '../services/ibgeservice';
+import axios from 'axios';
 
 type DadosPIB = {
   ano: string;
-  pibTotal: number;
-  pibPerCapita: number;
+  quantidadeProduzida: number;
+  quantidadeVendida: number;
 };
 
 export default function TabelaPIB() {
@@ -13,25 +13,33 @@ export default function TabelaPIB() {
   const [pagina, setPagina] = useState(0);
   const itensPorPagina = 10;
 
-  function formatarMoeda(valor: number) {
-    return valor.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'USD',
-    });
+  function formatarNumero(valor: number) {
+    return valor.toLocaleString('pt-BR');
   }
-  
+
+  async function buscarDadosIBGE() {
+    const agregado = 1712;
+    const variaveis = '214|1982';
+    const localidades = 'BR';
+
+    const url = `https://servicodados.ibge.gov.br/api/v3/agregados/${agregado}/variaveis/${variaveis}?localidades=${localidades}`;
+    const response = await axios.get(url);
+    return response.data;
+  }
+
   useEffect(() => {
     async function carregarDados() {
-        const resultado = await buscarDadosPIB() as any;
-      const dadosFormatados: DadosPIB[] = Object.entries(
-        resultado[0].resultados[0].series['all'].serie as Record<string, string>
-      ).map(([ano, valor]) => ({
+      const resultado = await buscarDadosIBGE();
+
+      const serieProduzida = resultado[0].resultados[0].series['all'].serie as Record<string, string>;
+      const serieVendida = resultado[0].resultados[1].series['all'].serie as Record<string, string>;
+
+      const dadosFormatados: DadosPIB[] = Object.entries(serieProduzida).map(([ano, valor]) => ({
         ano,
-        pibTotal: parseFloat(valor),
-        pibPerCapita: parseFloat(
-          (resultado[0].resultados[1].series['all'].serie as Record<string, string>)[ano] ?? '0'
-        ),
+        quantidadeProduzida: parseFloat(valor),
+        quantidadeVendida: parseFloat(serieVendida[ano] ?? '0'),
       }));
+
       setDados(dadosFormatados);
     }
 
@@ -40,28 +48,27 @@ export default function TabelaPIB() {
 
   const dadosPagina = dados.slice(pagina * itensPorPagina, (pagina + 1) * itensPorPagina);
 
-  const handlePageClick = (event: any) => {
-    const selectedPage = event.selected;
-    setPagina(selectedPage);
+  const handlePageClick = (event: { selected: number }) => {
+    setPagina(event.selected);
   };
 
   return (
     <div>
-      <h1>Tabela de PIB por Ano</h1>
+      <h1>Tabela de Produção e Venda</h1>
       <table>
         <thead>
           <tr>
             <th>Ano</th>
-            <th>PIB Total (USD)</th>
-            <th>PIB per Capita (USD)</th>
+            <th>Quantidade Produzida</th>
+            <th>Quantidade Vendida</th>
           </tr>
         </thead>
         <tbody>
           {dadosPagina.map((item) => (
             <tr key={item.ano}>
               <td>{item.ano}</td>
-              <td>{formatarMoeda(item.pibTotal)}</td>
-              <td>{formatarMoeda(item.pibPerCapita)}</td>
+              <td>{formatarNumero(item.quantidadeProduzida)}</td>
+              <td>{formatarNumero(item.quantidadeVendida)}</td>
             </tr>
           ))}
         </tbody>
