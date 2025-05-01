@@ -1,13 +1,17 @@
 import axios from 'axios';
 
-export const buscarTaxaCambio = async (): Promise<number> => {
+const API_URL = 'https://api.exchangerate-api.com/v4/latest/USD'; 
+export const buscarTaxaCambio = async (ano: number): Promise<number> => {
   try {
-    const response = await axios.get('https://economia.awesomeapi.com.br/json/last/USD-BRL');
-    const taxaCambio = parseFloat(response.data.USDBRL.bid); 
-    console.log("Taxa de câmbio USD-BRL:", taxaCambio);
-    return taxaCambio;
+    const response = await axios.get(`${API_URL}?year=${ano}`);
+    console.log(response);
+    if (response.data && response.data.rates) {
+      return response.data.rates.BRL || 0;
+    }
+    
+    throw new Error('Taxa de câmbio não encontrada');
   } catch (error) {
-    console.error('Erro ao buscar taxa de câmbio:', error);
-    return 5.71; 
+    console.error('Erro ao buscar a taxa de câmbio:', error);
+    return 0; 
   }
 };

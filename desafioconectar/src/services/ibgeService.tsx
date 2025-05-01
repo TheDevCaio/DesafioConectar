@@ -24,7 +24,7 @@ export const buscarDadosPIB = async (): Promise<DadosPIB[]> => {
       pibTotal: parseFloat(valor as string)
     }));
 
-    return resultado;
+    return resultado.sort((a, b) => a.ano - b.ano);
   } catch (error) {
     console.error('Erro ao buscar dados do IBGE:', error);
     return [];

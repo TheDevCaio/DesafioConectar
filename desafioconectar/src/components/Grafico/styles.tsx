@@ -69,7 +69,8 @@ export const ChartContainer = styled.div`
   }
 
   @media (max-width: 768px) {
-    height: 320px;
+    height: 50vh;
+    min-width: 110vw;
   }
 `;
 
