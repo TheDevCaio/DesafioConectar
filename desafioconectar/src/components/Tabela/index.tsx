@@ -44,8 +44,11 @@ const TabelaPIB = () => {
           return null;
         })
       );
-
-      setDados(dadosCompletos.filter((item) => item !== null));
+      setDados(
+        dadosCompletos
+          .filter((item) => item !== null)
+          .sort((a, b) => a!.ano - b!.ano)
+      );
     };
 
     fetchData();
