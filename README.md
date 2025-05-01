@@ -21,7 +21,8 @@ FinanceCGX é um sistema desenvolvido para exibir dados econômicos brasileiros 
 
 ## Como Rodar o Projeto
   yarn install
-  yarn dev ou yarn build
+  yarn dev
+  yarn build
 ### Pré-requisitos
 
 - **Node.js**: Certifique-se de ter o Node.js instalado na sua máquina.
