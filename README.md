@@ -20,9 +20,7 @@ FinanceCGX é um sistema desenvolvido para exibir dados econômicos brasileiros 
 - **Responsividade**: A aplicação é responsiva e oferece uma experiência fluida tanto em dispositivos móveis quanto em desktops.
 
 ## Como Rodar o Projeto
-  yarn install
-  yarn dev
-  yarn build
+Para instalar: yarn install, testar: yarn dev, buildar: yarn build.
 ### Pré-requisitos
 
 - **Node.js**: Certifique-se de ter o Node.js instalado na sua máquina.
