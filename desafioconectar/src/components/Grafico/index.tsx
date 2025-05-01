@@ -157,7 +157,11 @@ const Grafico: React.FC = () => {
               }}
             />
             <Tooltip
-              formatter={(value: number, name: string) => [formatarDolar(value), name]}
+              formatter={(value: number, name: string) => {
+                const formatado =
+                  name === 'PIB per Capita' ? formatarDolarMilhares(value) : formatarDolar(value);
+                return [formatado, name];
+              }}
               labelFormatter={(label: number) => `Ano: ${label}`}
             />
             {mostrarPIBTotal && (
