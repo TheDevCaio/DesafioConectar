@@ -17,8 +17,8 @@ import {
   CheckboxLabel,
 } from './styles';
 import { buscarTaxaCambio } from '../../services/taxaCambio';
-import buscarPopulacaoBrasil from '../../services/buscarPopulacaoBrasil';
 import { DadosPIB, buscarDadosPIB } from '../../services/ibgeservice';
+import { buscarPopulacaoBrasil } from '../../services/buscarPopulacaoBrasil';
 
 const Grafico: React.FC = () => {
   const [dados, setDados] = useState<DadosPIB[]>([]);
@@ -37,28 +37,32 @@ const Grafico: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const dadosPIB = await buscarDadosPIB();
-      const taxaCambio = await buscarTaxaCambio();
-      const populacao = await buscarPopulacaoBrasil();
-
-      if (populacao === 0) {
-        console.error('População inválida. Não foi possível calcular o PIB per capita.');
-        return;
-      }
-
-      const dadosEmDolar = dadosPIB.map((dado) => {
-        const pibEmDolar = dado.pibTotal / taxaCambio;
-        const pibPerCapitaEmDolar = pibEmDolar / populacao;
-        return {
-          ...dado,
-          pibTotal: pibEmDolar,
-          pibPerCapita: pibPerCapitaEmDolar,
-        };
-      });
-
-      setDados(dadosEmDolar);
+      const dadosPIB = await buscarDadosPIB(); // Aqui você já tem os dados do PIB, com o ano incluso
+      const dadosCompletos = await Promise.all(
+        dadosPIB.map(async (dado) => {
+          const taxaCambio = await buscarTaxaCambio(dado.ano); // Passa o ano aqui
+          const populacao = await buscarPopulacaoBrasil(dado.ano); // Passa o ano aqui
+  
+          if (!populacao) {
+            console.error('População inválida. Não foi possível calcular o PIB per capita.');
+            return null; // Evita inserir dados inválidos no gráfico
+          }
+  
+          const pibEmDolar = dado.pibTotal / taxaCambio;
+          const pibPerCapitaEmDolar = pibEmDolar / populacao;
+  
+          return {
+            ...dado,
+            pibTotal: pibEmDolar,
+            pibPerCapita: pibPerCapitaEmDolar,
+          };
+        })
+      );
+  
+     
+      setDados(dadosCompletos.filter((dado) => dado !== null));
     };
-
+  
     fetchData();
   }, []);
 
@@ -69,14 +73,13 @@ const Grafico: React.FC = () => {
       minimumFractionDigits: 2,
     }).format(valor);
 
-
-    //A função que inveja tos valores no Y da direita, está vindo em unidade de milhar, vou precisar formatar separado
-    const formatarDolarMilhares = (valor: number) =>
-      new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-      }).format(valor * 1000);
+  // Formatação do valor em milhares para a unidade correta.
+  const formatarDolarMilhares = (valor: number) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(valor * 1000);
 
   const CustomYAxisLabelRight = ({ viewBox }: { viewBox: any }) => {
     const { x, y, height } = viewBox;
@@ -143,7 +146,7 @@ const Grafico: React.FC = () => {
               width={isMobile ? 70 : 80}
               tickFormatter={formatarDolar}
               tick={{
-                style: { fontSize: isMobile ? 10 : 14, fill: '#333' }
+                style: { fontSize: isMobile ? 10 : 14, fill: '#333' },
               }}
             />
             <YAxis
@@ -153,7 +156,7 @@ const Grafico: React.FC = () => {
               label={<CustomYAxisLabelRight viewBox={{ x: 0, y: 0, height: 200 }} />}
               tickFormatter={formatarDolarMilhares}
               tick={{
-                style: { fontSize: isMobile ? 10 : 14, fill: '#333' }
+                style: { fontSize: isMobile ? 10 : 14, fill: '#333' },
               }}
             />
             <Tooltip
