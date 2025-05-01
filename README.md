@@ -28,9 +28,9 @@ Para instalar: yarn install, testar: yarn dev, buildar: yarn build.
   ```bash
   node -v
 
-![fotomobile1](https://github.com/user-attachments/assets/6ec3c39a-547d-444e-9a76-edf53f51c91d)
 ![fotofoto2](https://github.com/user-attachments/assets/c3df3dc6-1f57-4235-94b0-a1e3298c76b7)
 ![Foto1fotofoto](https://github.com/user-attachments/assets/342e4a44-ba22-4d22-9d9b-a65412813779)
 ![fotomobile2](https://github.com/user-attachments/assets/dfd8404c-0213-478f-9791-64d3571c0e72)
+![fotomobile1](https://github.com/user-attachments/assets/6ec3c39a-547d-444e-9a76-edf53f51c91d)
 
   
