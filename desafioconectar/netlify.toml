@@ -1,7 +1,7 @@
 [build]
-  command = "yarn build"
-  publish = "dist"  # Ou o diretório de saída correto do seu projeto
-
+  command = "yarn install && yarn build"
+  publish = "dist"
+  
 [build.environment]
   NODE_ENV = "production"
 
