@@ -1,3 +1,10 @@
+
+# Como acessar:
+https://financiecgx.netlify.app
+
+## Como Rodar o Projeto
+Para instalar: yarn install, testar: yarn dev, buildar: yarn build.
+
 # FinanceCGX
 
 FinanceCGX é um sistema desenvolvido para exibir dados econômicos brasileiros com base em APIs externas. Ele consome dados de diversas fontes como o IBGE, World Bank e ExchangeRateAPI para mostrar informações sobre o PIB brasileiro, PIB per Capita, taxa de câmbio e outros indicadores econômicos. O projeto é uma aplicação web responsiva, feita com **Vite + React**, que apresenta esses dados de forma visual e interativa.
@@ -19,8 +26,6 @@ FinanceCGX é um sistema desenvolvido para exibir dados econômicos brasileiros 
 - **Tabela de PIB**: O sistema também exibe uma tabela com os valores históricos do PIB total e PIB per capita por ano.
 - **Responsividade**: A aplicação é responsiva e oferece uma experiência fluida tanto em dispositivos móveis quanto em desktops.
 
-## Como Rodar o Projeto
-Para instalar: yarn install, testar: yarn dev, buildar: yarn build.
 ### Pré-requisitos
 
 - **Node.js**: Certifique-se de ter o Node.js instalado na sua máquina.
