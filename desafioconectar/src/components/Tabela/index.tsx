@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { buscarPopulacaoBrasil } from '../../services/buscarPopulacaoBrasil';
 import { buscarDadosPIB } from '../../services/ibgeservice';
-import { TabelaContainer, TabelaEstilizada } from './styles';
+import { TabelaContainer, TabelaEstilizada, Title } from './styles';
+
 
 interface DadosTela2 {
   ano: number;
@@ -52,7 +53,7 @@ const TabelaPIB = () => {
 
   return (
     <TabelaContainer>
-      <h1>Tabela de PIB por Ano (2007-2012)</h1>
+      <Title>Tabela de PIB por Ano (2007-2012)</Title>
       <TabelaEstilizada>
         <thead>
           <tr>
