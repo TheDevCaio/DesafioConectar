@@ -17,8 +17,8 @@ import {
   CheckboxLabel,
 } from './styles';
 import { buscarTaxaCambio } from '../../services/taxaCambio';
-import buscarPopulacaoBrasil from '../../services/buscarPopulacaoBrasil';
 import { DadosPIB, buscarDadosPIB } from '../../services/ibgeservice';
+import { buscarPopulacaoBrasil } from '../../services/buscarPopulacaoBrasil';
 
 const Grafico: React.FC = () => {
   const [dados, setDados] = useState<DadosPIB[]>([]);
@@ -34,32 +34,35 @@ const Grafico: React.FC = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       const dadosPIB = await buscarDadosPIB();
-      const taxaCambio = await buscarTaxaCambio();
-      const populacao = await buscarPopulacaoBrasil();
-      if (populacao === 0) {
-        console.error('População inválida. Não foi possível calcular o PIB per capita.');
-        return;
-      }
-
-      const dadosEmDolar = dadosPIB
-        .map((dado) => {
+      const dadosCompletos = await Promise.all(
+        dadosPIB.map(async (dado) => {
+          const taxaCambio = await buscarTaxaCambio(dado.ano); 
+          const populacao = await buscarPopulacaoBrasil(dado.ano); 
+  
+          if (!populacao) {
+            console.error('População inválida. Não foi possível calcular o PIB per capita.');
+            return null; 
+          }
+  
           const pibEmDolar = dado.pibTotal / taxaCambio;
           const pibPerCapitaEmDolar = pibEmDolar / populacao;
+  
           return {
             ...dado,
             pibTotal: pibEmDolar,
             pibPerCapita: pibPerCapitaEmDolar,
-          } as DadosPIB;
+          };
         })
-        .filter((dado): dado is DadosPIB => dado !== null);
-
-      setDados(dadosEmDolar);
+      );
+  
+     
+      setDados(dadosCompletos.filter((dado) => dado !== null));
     };
-
+  
     fetchData();
   }, []);
 
@@ -70,38 +73,29 @@ const Grafico: React.FC = () => {
       minimumFractionDigits: 2,
     }).format(valor);
 
-  const CustomYAxisLabelLeft = ({ viewBox }: any) => {
+
+  const formatarDolarMilhares = (valor: number) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(valor * 1000);
+
+  const CustomYAxisLabelRight = ({ viewBox }: { viewBox: any }) => {
     const { x, y, height } = viewBox;
+    const centroY = y + height / 2;
+
     return (
       <text
-        x={x - 40}
-        y={y + height / 2 - 42}
+        x={x + 70}
+        y={isMobile ? centroY - 40 : centroY - 90}
         textAnchor="middle"
         dominantBaseline="middle"
-        transform={`rotate(-90, ${x - 40}, ${y + height / 2})`}
+        transform={`rotate(90, ${x + 40}, ${isMobile ? centroY : centroY - 26})`}
         fill="#000"
+        fontSize={isMobile ? 10 : 12}
       >
-        PIB Total (US$)
-      </text>
-    );
-  };
-
-  
-
-  
-
-  const CustomYAxisLabelRight = ({ viewBox }: any) => {
-    const { x, y, height } = viewBox;
-    return (
-      <text
-        x={x + 40}
-        y={y + height / 2 - 66}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        transform={`rotate(90, ${x + 40}, ${y + height / 2 -26})`}
-        fill="#000"
-      >
-        PIB per Capita (US$)
+        Esq: PIB Brasileiro | Dir: PIB per Capita Brasileiro
       </text>
     );
   };
@@ -130,10 +124,10 @@ const Grafico: React.FC = () => {
       </CheckboxGroup>
 
       <ChartContainer>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
           <LineChart
             data={dados}
-            margin={{ top: 20, right:30, left: 89, bottom: 20 }}
+            margin={{ top: 50, right: 40, left: 60, bottom: 40 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
@@ -142,22 +136,35 @@ const Grafico: React.FC = () => {
                 value: 'Ano',
                 position: 'insideBottom',
                 offset: -5,
+                style: { fill: '#333' },
+              }}
+              tick={{ style: { fontSize: isMobile ? 10 : 14, fill: '#333' } }}
+            />
+            <YAxis
+              yAxisId="left"
+              orientation="left"
+              width={isMobile ? 70 : 80}
+              tickFormatter={formatarDolar}
+              tick={{
+                style: { fontSize: isMobile ? 10 : 14, fill: '#333' },
               }}
             />
-          <YAxis
-            yAxisId="left"
-            label={<CustomYAxisLabelLeft />}
-            tickFormatter={formatarDolar}
-            tick={{ fontSize: window.innerWidth <= 768 ? 10 : 14 }} // aqui está o segredo
-          />
             <YAxis
               yAxisId="right"
               orientation="right"
-              label={<CustomYAxisLabelRight />}
-              tickFormatter={formatarDolar}
+              width={isMobile ? 70 : 80}
+              label={<CustomYAxisLabelRight viewBox={{ x: 0, y: 0, height: 200 }} />}
+              tickFormatter={formatarDolarMilhares}
+              tick={{
+                style: { fontSize: isMobile ? 10 : 14, fill: '#333' },
+              }}
             />
             <Tooltip
-              formatter={(value: number, name: string) => [formatarDolar(value), name]}
+              formatter={(value: number, name: string) => {
+                const formatado =
+                  name === 'PIB per Capita' ? formatarDolarMilhares(value) : formatarDolar(value);
+                return [formatado, name];
+              }}
               labelFormatter={(label: number) => `Ano: ${label}`}
             />
             {mostrarPIBTotal && (
@@ -179,7 +186,6 @@ const Grafico: React.FC = () => {
                 name="PIB per Capita"
                 stroke="#ff7300"
                 strokeWidth={3}
-                dot
               />
             )}
           </LineChart>
