@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+// Grafico.tsx
+import React, { useEffect, useReducer, useState } from 'react';
 import {
   LineChart,
   Line,
@@ -19,11 +20,10 @@ import {
 import { buscarTaxaCambio } from '../../services/taxaCambio';
 import { DadosPIB, buscarDadosPIB } from '../../services/ibgeService';
 import { buscarPopulacaoBrasil } from '../../services/buscarPopulacaoBrasil';
+import { reducer, initialState } from '../../utils/reducerGlobal';
 
 const Grafico: React.FC = () => {
-  const [dados, setDados] = useState<DadosPIB[]>([]);
-  const [mostrarPIBTotal, setMostrarPIBTotal] = useState(false);
-  const [mostrarPIBPerCapita, setMostrarPIBPerCapita] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -40,17 +40,17 @@ const Grafico: React.FC = () => {
       const dadosPIB = await buscarDadosPIB();
       const dadosCompletos = await Promise.all(
         dadosPIB.map(async (dado) => {
-          const taxaCambio = await buscarTaxaCambio(dado.ano); 
-          const populacao = await buscarPopulacaoBrasil(dado.ano); 
-  
+          const taxaCambio = await buscarTaxaCambio(dado.ano);
+          const populacao = await buscarPopulacaoBrasil(dado.ano);
+
           if (!populacao) {
             console.error('População inválida. Não foi possível calcular o PIB per capita.');
-            return null; 
+            return null;
           }
-  
+
           const pibEmDolar = dado.pibTotal / taxaCambio;
           const pibPerCapitaEmDolar = pibEmDolar / populacao;
-  
+
           return {
             ...dado,
             pibTotal: pibEmDolar,
@@ -58,11 +58,10 @@ const Grafico: React.FC = () => {
           };
         })
       );
-  
-     
-      setDados(dadosCompletos.filter((dado) => dado !== null));
+
+      dispatch({ type: 'SET_DADOS', payload: dadosCompletos.filter((dado) => dado !== null) });
     };
-  
+
     fetchData();
   }, []);
 
@@ -72,7 +71,6 @@ const Grafico: React.FC = () => {
       currency: 'USD',
       minimumFractionDigits: 2,
     }).format(valor);
-
 
   const formatarDolarMilhares = (valor: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -108,16 +106,16 @@ const Grafico: React.FC = () => {
         <CheckboxLabel color="#8884d8">
           <input
             type="checkbox"
-            checked={mostrarPIBTotal}
-            onChange={() => setMostrarPIBTotal(!mostrarPIBTotal)}
+            checked={state.mostrarPIBTotal}
+            onChange={() => dispatch({ type: 'TOGGLE_PIB_TOTAL' })}
           />
           <span>PIB Total</span>
         </CheckboxLabel>
         <CheckboxLabel color="#ff7300">
           <input
             type="checkbox"
-            checked={mostrarPIBPerCapita}
-            onChange={() => setMostrarPIBPerCapita(!mostrarPIBPerCapita)}
+            checked={state.mostrarPIBPerCapita}
+            onChange={() => dispatch({ type: 'TOGGLE_PIB_PER_CAPITA' })}
           />
           <span>PIB per Capita</span>
         </CheckboxLabel>
@@ -125,10 +123,7 @@ const Grafico: React.FC = () => {
 
       <ChartContainer>
         <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
-          <LineChart
-            data={dados}
-            margin={{ top: 50, right: 40, left: 60, bottom: 40 }}
-          >
+          <LineChart data={state.dados} margin={{ top: 50, right: 40, left: 60, bottom: 40 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="ano"
@@ -167,7 +162,7 @@ const Grafico: React.FC = () => {
               }}
               labelFormatter={(label: number) => `Ano: ${label}`}
             />
-            {mostrarPIBTotal && (
+            {state.mostrarPIBTotal && (
               <Line
                 yAxisId="left"
                 type="monotone"
@@ -178,7 +173,7 @@ const Grafico: React.FC = () => {
                 dot={false}
               />
             )}
-            {mostrarPIBPerCapita && (
+            {state.mostrarPIBPerCapita && (
               <Line
                 yAxisId="right"
                 type="monotone"
@@ -193,13 +188,13 @@ const Grafico: React.FC = () => {
       </ChartContainer>
 
       <CustomLegend>
-        {mostrarPIBTotal && (
+        {state.mostrarPIBTotal && (
           <div>
             <span className="dot" style={{ backgroundColor: '#8884d8' }}></span>
             PIB Total
           </div>
         )}
-        {mostrarPIBPerCapita && (
+        {state.mostrarPIBPerCapita && (
           <div>
             <span className="dot" style={{ backgroundColor: '#ff7300' }}></span>
             PIB per Capita

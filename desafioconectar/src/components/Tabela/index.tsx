@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useReducer } from 'react';
 import { buscarPopulacaoBrasil } from '../../services/buscarPopulacaoBrasil';
 import { buscarDadosPIB } from '../../services/ibgeService';
 import { TabelaContainer, TabelaEstilizada, Title } from './styles';
+import { reducer, initialState } from '../../utils/reducerGlobal';
 
-
-interface DadosTela2 {
+type DadosTela2 = {
   ano: number;
   pibTotal: number;
   pibPerCapita: number;
-}
+};
 
 const TabelaPIB = () => {
-  const [dados, setDados] = useState<DadosTela2[]>([]);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const formatarDolarMilhares = (valor: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -22,15 +23,10 @@ const TabelaPIB = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-
       const pibData = await buscarDadosPIB();
-
       const anos = [2007, 2008, 2009, 2010, 2011, 2012];
-      
-
       const dadosCompletos = await Promise.all(
         pibData.map(async (item) => {
-
           if (anos.includes(item.ano)) {
             const populacao = await buscarPopulacaoBrasil(item.ano);
             const pibPerCapita = (item.pibTotal / populacao) * 100;
@@ -45,7 +41,7 @@ const TabelaPIB = () => {
         })
       );
 
-      setDados(dadosCompletos.filter((item) => item !== null));
+      dispatch({ type: 'SET_DADOS', payload: dadosCompletos.filter((item) => item !== null) });
     };
 
     fetchData();
@@ -63,7 +59,7 @@ const TabelaPIB = () => {
           </tr>
         </thead>
         <tbody>
-          {dados.map((item) => (
+          {state.dados.map((item) => (
             <tr key={item.ano}>
               <td>{item.ano}</td>
               <td>{formatarDolarMilhares(item.pibTotal)}</td>
