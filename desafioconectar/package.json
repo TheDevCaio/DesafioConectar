@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
     "@types/testing-library__react": "^10.2.0",
     "axios": "^1.9.0",
     "desafioconectar": "file:",
