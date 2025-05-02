@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { buscarPopulacaoBrasil } from '../../services/buscarPopulacaoBrasil';
-import { buscarDadosPIB } from '../../services/ibgeservice';
+import { buscarDadosPIB } from '../../services/ibgeService';
 import { TabelaContainer, TabelaEstilizada, Title } from './styles';
 
 

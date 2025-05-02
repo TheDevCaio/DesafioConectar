@@ -17,7 +17,7 @@ import {
   CheckboxLabel,
 } from './styles';
 import { buscarTaxaCambio } from '../../services/taxaCambio';
-import { DadosPIB, buscarDadosPIB } from '../../services/ibgeservice';
+import { DadosPIB, buscarDadosPIB } from '../../services/ibgeService';
 import { buscarPopulacaoBrasil } from '../../services/buscarPopulacaoBrasil';
 
 const Grafico: React.FC = () => {
