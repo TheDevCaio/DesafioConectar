@@ -16,7 +16,7 @@ export function Navbar() {
       <Title>FinancieCGX.io</Title>
 
       <HamburgerIcon
-        src="/public/menuMobile.png"
+        src="/menuMobile.png"
         alt="menu"
         onClick={() => setIsOpen(!isOpen)}
       />
