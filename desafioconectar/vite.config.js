@@ -1,19 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { configDefaults } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    proxy: {
-      '/api-ibge': {
-        target: 'https://servicodados.ibge.gov.br',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api-ibge/, ''),
-      },
-    },
-  },
   test: {
+    globals: true,
     environment: 'jsdom',
-    globals: true
-  }
+    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    exclude: [...configDefaults.exclude],
+  },
 })
